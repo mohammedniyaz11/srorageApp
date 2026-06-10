@@ -97,6 +97,23 @@ export const login = async (req, res, next) => {
   res.json({ message: "logged in" });
 };
 
+
+
+export const getAllUsers = async (req, res) => {
+  const allUsers = await User.find().lean();
+  const allSessions = await Session.find().lean();
+  const allSessionsUserId = allSessions.map(({ userId }) => userId.toString());
+  const allSessionsUserIdSet = new Set(allSessionsUserId);
+
+  const transformedUsers = allUsers.map(({ _id, name, email }) => ({
+    id: _id,
+    name,
+    email,
+    isLoggedIn: allSessionsUserIdSet.has(_id.toString()),
+  }));
+  res.status(200).json(transformedUsers);
+};
+
 export const getCurrentUser = (req, res) => {
   res.status(200).json({
     name: req.user.name,
