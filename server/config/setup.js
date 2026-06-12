@@ -39,6 +39,10 @@ try {
           picture: {
             bsonType: "string",
           },
+          role: {
+            bsonType: "string",
+            enum: ["Admin", "Manager", "User"],
+          },
           __v: {
             bsonType: "int",
           },

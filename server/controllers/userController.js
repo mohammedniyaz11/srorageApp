@@ -100,6 +100,7 @@ export const login = async (req, res, next) => {
 
 
 export const getAllUsers = async (req, res) => {
+  console.log("getAllUsers called");
   const allUsers = await User.find().lean();
   const allSessions = await Session.find().lean();
   const allSessionsUserId = allSessions.map(({ userId }) => userId.toString());
@@ -111,6 +112,7 @@ export const getAllUsers = async (req, res) => {
     email,
     isLoggedIn: allSessionsUserIdSet.has(_id.toString()),
   }));
+  console.log(transformedUsers,"==transformedUsers==");
   res.status(200).json(transformedUsers);
 };
 
