@@ -1,36 +1,39 @@
 import express from "express";
-import checkAuth from "../middlewares/authMiddleware.js";
+import checkAuth, {
+  checkIsAdminUser,
+  checkNotRegularUser,
+} from "../middlewares/authMiddleware.js";
 import {
+  deleteUser,
+  getAllUsers,
   getCurrentUser,
   login,
   logout,
   logoutAll,
+  logoutById,
   register,
-  getAllUsers,
-
 } from "../controllers/userController.js";
 
 const router = express.Router();
 
-router.post("/register", register);
+router.post("/user/register", register);
 
-router.post("/login", login);
+router.post("/user/login", login);
 
-router.get("/", checkAuth, getCurrentUser);
+router.get("/user", checkAuth, getCurrentUser);
 
+router.post("/user/logout", logout);
+router.post("/user/logout-all", logoutAll);
 
-router.get(
-  "/users",
+router.get("/users", checkAuth, checkNotRegularUser, getAllUsers);
+
+router.post(
+  "/users/:userId/logout",
   checkAuth,
-  (req, res, next) => {
-    if (req.user.role !== "User") return next();
-    res.status(403).json({ error: "You can not access users" });
-  },
-  getAllUsers
+  checkNotRegularUser,
+  logoutById
 );
 
-
-router.post("/logout", logout);
-router.post("/logout-all", logoutAll);
+router.delete("/users/:userId", checkAuth, checkIsAdminUser, deleteUser);
 
 export default router;

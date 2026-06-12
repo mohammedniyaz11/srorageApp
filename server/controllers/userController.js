@@ -2,6 +2,7 @@ import Directory from "../models/directoryModel.js";
 import User from "../models/userModel.js";
 import mongoose, { Types } from "mongoose";
 import Session from "../models/sessionModel.js";
+import File from "../models/fileModel.js";
 import OTP from "../models/otpModel.js";
 
 export const register = async (req, res, next) => {
@@ -97,10 +98,7 @@ export const login = async (req, res, next) => {
   res.json({ message: "logged in" });
 };
 
-
-
 export const getAllUsers = async (req, res) => {
-  console.log("getAllUsers called");
   const allUsers = await User.find().lean();
   const allSessions = await Session.find().lean();
   const allSessionsUserId = allSessions.map(({ userId }) => userId.toString());
@@ -112,7 +110,6 @@ export const getAllUsers = async (req, res) => {
     email,
     isLoggedIn: allSessionsUserIdSet.has(_id.toString()),
   }));
-  console.log(transformedUsers,"==transformedUsers==");
   res.status(200).json(transformedUsers);
 };
 
@@ -121,6 +118,7 @@ export const getCurrentUser = (req, res) => {
     name: req.user.name,
     email: req.user.email,
     picture: req.user.picture,
+    role: req.user.role,
   });
 };
 
@@ -131,10 +129,32 @@ export const logout = async (req, res) => {
   res.status(204).end();
 };
 
+export const logoutById = async (req, res, next) => {
+  try {
+    await Session.deleteMany({ userId: req.params.userId });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const logoutAll = async (req, res) => {
   const { sid } = req.signedCookies;
   const session = await Session.findById(sid);
   await Session.deleteMany({ userId: session.userId });
   res.clearCookie("sid");
   res.status(204).end();
+};
+
+export const deleteUser = async (req, res, next) => {
+  const { userId } = req.params;
+  try {
+    await User.findByIdAndDelete(userId);
+    await File.deleteMany({ userId });
+    await Directory.deleteMany({ userId });
+    await Session.deleteMany({ userId });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
 };

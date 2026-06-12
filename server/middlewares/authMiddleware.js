@@ -23,3 +23,15 @@ export default async function checkAuth(req, res, next) {
   req.user = user;
   next();
 }
+
+
+export const checkNotRegularUser = (req, res, next) => {
+  if (req.user.role !== "User") return next();
+  res.status(403).json({ error: "You can not access users" });
+};
+
+export const checkIsAdminUser = (req, res, next) => {
+  if (req.user.role === "Admin") return next();
+  res.status(403).json({ error: "You can not delete users" });
+};
+
